@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>React表单与交互</title>
+	<script src='react.js'></script>
+	<script src='react-dom.js'></script>
+	<script src='babel.min.js'></script>
+	<style>
+		*{
+			margin:0;
+			padding:0;
+			list-style: none;
+		}
+		.box{
+			position: absolute;
+			left: 50%;
+			top:50%;
+			transform: translate(-50%,-50%);
+			width:400px;
+			border:1px solid #ccc;
+		}
+		/*大图样式*/
+		.top{
+			width:100%;	
+			overflow: hidden;
+		}
+		.top ul{
+			height: 270px;
+			transition:.7s;
+		}
+		.top ul li{
+			float:left;
+			overflow: hidden;
+			width:400px;
+		}
+		.top ul li img{
+			width: 100%;
+		}
+		.top div{
+			z-index: 2;
+			position: absolute;
+			background-color: rgba(255,255,255,0.3);
+			font-size: 20px;
+			font-family: 'Microsoft YaHei';
+			cursor: pointer;
+		}
+		.top .left{
+			top:50%;
+			transform:translateY(-50%);
+		}
+		.top .right{
+			right: 0;
+			top:50%;
+			transform:translateY(-50%);
+		}
+		/*中间文字样式*/
+		.center{
+			height: 30px;
+			background-color: pink;
+			line-height: 30px;
+			font-size: 20px;
+			font-family: 'Microsoft YaHei';
+		}
+		.center .center-text{
+			float:left;
+			margin-left: 5px;
+		}
+		.center .center-btn{
+			float: right;
+		}
+		.center-btn span{
+			margin-right: 5px;
+			cursor: pointer;
+		}
+		/*缩略图样式*/
+		.bottom{
+			height:66px;
+			overflow: hidden;
+		}
+		.bottom ul{
+			transition: 0.7s;
+			height: 100%;
+		}
+		.bottom ul li{
+			float: left;
+			width: 96px;
+			border:2px solid orange;
+		}
+		.bottom ul li img{
+			width: 100%;
+			height: 100%;
+		}
+		.bottom ul .active{
+			border-color:green;
+		}
+	</style>
+</head>
+<body>
+	<div id='example'></div>
+	<script type='text/babel'>
+		/*高级tab栏*/
+		/*三个组件：<Top /><Center /><Bottom />*/
+		/*定义一个对象存储图片信息和图片介绍文字*/
+		let imgSrc = {
+			src:['imgs/1.jpg','imgs/2.jpg','imgs/3.jpg','imgs/4.jpg','imgs/5.jpg','imgs/6.jpg','imgs/7.jpg'],
+			text:['这是第一张图','这是第二张图','这是第三张图','这是第四张图','这是第五张图','这是第六张图','这是第七张图']
+		}
+		/*大图组件*/
+		class Top extends React.Component{
+			render(){
+				/*定义一个数组存放图片*/
+				let img = [];
+				this.props.imgSrc.forEach((val,index)=>{
+					img.push(<li key={index}><img style={{transform:'scale('+this.props.Tscale+')'}} src={val}/></li>);
+				})
+				return (
+					<div className='top'>
+						<div className='left' onClick={this.props.lFn}>左</div>
+						<div className='right' onClick={this.props.rFn}>右</div>
+						<ul style={{width:this.props.imgSrc.length*400+'px',marginLeft:-this.props.Tindex*400+'px'}}>{img}</ul>
+					</div>
+				)
+			}
+		}
+		/*文字组件*/
+		class Center extends React.Component{
+			render(){
+				return (
+					<div className='center'>
+						<span className='center-text'>{this.props.text[this.props.Cindex]}</span>
+						<div className='center-btn'>
+							<span class='big' onClick={this.props.big}>大</span>
+							<span class='small' onClick={this.props.small}>小</span>
+						</div>
+					</div>
+				)
+			}
+		}
+		/*缩略图组件*/
+		class Bottom extends React.Component{
+			render(){
+				/*定义一个数组存放图片*/
+				let img = [];
+				this.props.imgBsrc.forEach((val,index)=>{
+					img.push(<li className={this.props.Bindex==index?'active':''} key={index} onClick={this.props.Bchange.bind(val,index)}><img src={val}/></li>)
+				})
+				return (
+					<div className='bottom'>
+						<ul style={{width:this.props.imgBsrc.length*100+'px',marginLeft:this.props.Bindex>3?(this.props.Bindex-3)*-100:0}}>{img}</ul>
+					</div>
+				)
+			}
+		}
+		/*父组件*/
+		class Tab extends React.Component{
+			constructor(){
+				super();
+				this.state={
+				/*存储索引值*/
+					index:0,
+				/*存储放大倍数*/
+					iScale:1
+				}
+			}
+			change(i){
+				this.setState({
+					index:i
+				});
+			}
+			/*点击大图组件的左按钮*/
+			leftFn(){
+				let index=this.state.index;
+				index--;
+				if(index<0){
+					index=this.props.myData.src.length-1;
+				}
+				this.setState({
+					index:index,
+					iScale:1
+				});
+			}
+			/*点击大图组件的右按钮*/
+			rightFn(){
+				let index=this.state.index;
+				index++;
+				if(index==this.props.myData.src.length){
+					index=0;
+				}
+				this.setState({
+					index:index,
+					iScale:1
+				});
+			}
+			/*放大图片*/
+			big(){
+				let scale = this.state.iScale+0.1;
+				if(scale >= 2){
+					scale=2;
+					alert('已经最大了！');
+				}
+				this.setState({
+					iScale:scale
+				});
+			}
+			/*缩小图片*/
+			small(){
+				let scale = this.state.iScale-0.1;
+				if(scale <= 0.5){
+					scale=0.5;
+					alert('已经最小了！');
+				}
+				this.setState({
+					iScale:scale
+				});
+			}
+			render(){
+				return (
+					<div className='box'>
+						{/*将点击过后对应的index值传给大图组件*/}
+						<Top imgSrc={this.props.myData.src} Tindex={this.state.index} lFn={this.leftFn.bind(this)} rFn={this.rightFn.bind(this)}  Tscale={this.state.iScale}/>
+						<Center text={this.props.myData.text} Cindex={this.state.index} big={this.big.bind(this)} small={this.small.bind(this)}/>
+						<Bottom imgBsrc={this.props.myData.src} Bchange={this.change.bind(this)} Bindex={this.state.index}/>
+					</div>
+				)
+			}
+		}
+		ReactDOM.render(
+			<Tab myData={imgSrc}/>,
+			document.getElementById('example')
+		)
+	</script>
+</body>
+</html>
